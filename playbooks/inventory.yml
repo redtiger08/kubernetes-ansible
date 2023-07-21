@@ -1,0 +1,21 @@
+all:
+  hosts:
+    node0[4:6]:
+      ansible_user: root
+      ansible_ssh_private_key_file: ~/mz_keys/bu_20.pem
+  children:
+    g_kubernetes:
+      children:
+        control-plain:
+          hosts:
+            node04:
+          vars:
+            ansible_user: root
+            ansible_ssh_private_key_file: ~/mz_keys/bu_20.pem
+        worker:
+          hosts:
+            node05:
+              node06:
+          vars:
+            ansible_user: root
+            ansible_ssh_private_key_file: ~/mz_keys/bu_20.pem

@@ -1,0 +1,114 @@
+- name: Setting Controller
+  hosts:
+    - sv_kst01
+
+  tasks:
+#   - name: create db
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e 'CREATE DATABASE placement;'"
+
+#   - name: grant db1
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \" GRANT ALL PRIVILEGES ON placement.* TO 'placement'@'localhost' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+
+#   - name: grant db2
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON glance.* TO 'placement'@'%' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+    
+#   - name: Create placement user
+#     expect:
+#       command: openstack --os-auth-url http://controller:5000/v3 user create --domain default --password-prompt placement
+#       responses:
+#         "User Password": "{{ DB_PASSWD }}"
+#         "Repeat User Password": "{{ DB_PASSWD }}"
+#     environment:
+#       OS_PROJECT_DOMAIN_NAME: Default
+#       OS_USER_DOMAIN_NAME: Default
+#       OS_PROJECT_NAME: admin
+#       OS_USERNAME: admin
+#       OS_PASSWORD: "{{ DB_PASSWD }}"
+#       OS_IDENTITY_API_VERSION: '3'
+#       OS_IMAGE_API_VERSION: '2' 
+
+#   - name: Add admin role to placement user
+#     command: openstack --os-auth-url http://controller:5000/v3 role add --project service --user placement admin
+#     environment:
+#       OS_PROJECT_DOMAIN_NAME: Default
+#       OS_USER_DOMAIN_NAME: Default
+#       OS_PROJECT_NAME: admin
+#       OS_USERNAME: admin
+#       OS_PASSWORD: "{{ DB_PASSWD }}"
+#       OS_AUTH_URL: http://controller:5000/v3
+#       OS_IDENTITY_API_VERSION: '3'
+#       OS_IMAGE_API_VERSION: '2'        
+#  
+#   - name: create glance service 
+#     command: openstack --os-auth-url http://controller:5000/v3 service create --name placement --description "Placement API" placement
+#     environment:
+#       OS_PROJECT_DOMAIN_NAME: Default
+#       OS_USER_DOMAIN_NAME: Default
+#       OS_PROJECT_NAME: admin
+#       OS_USERNAME: admin
+#       OS_PASSWORD: "{{ DB_PASSWD }}"
+#       OS_AUTH_URL: http://controller:5000/v3
+#       OS_IDENTITY_API_VERSION: '3'
+#       OS_IMAGE_API_VERSION: '2'        
+#
+
+#   - name: create image service api endpoint1
+#     command: openstack --os-auth-url http://controller:5000/v3 endpoint create --region RegionOne placement public http://controller:8778
+#     environment:
+#       OS_PROJECT_DOMAIN_NAME: Default
+#       OS_USER_DOMAIN_NAME: Default
+#       OS_PROJECT_NAME: admin
+#       OS_USERNAME: admin
+#       OS_PASSWORD: "{{ DB_PASSWD }}"
+#       OS_AUTH_URL: http://controller:5000/v3
+#       OS_IDENTITY_API_VERSION: '3'
+#       OS_IMAGE_API_VERSION: '2'        
+
+#   - name: create image service api endpoint2
+#     command: openstack --os-auth-url http://controller:5000/v3 endpoint create --region RegionOne placement internal http://controller:8778
+#     environment:
+#       OS_PROJECT_DOMAIN_NAME: Default
+#       OS_USER_DOMAIN_NAME: Default
+#       OS_PROJECT_NAME: admin
+#       OS_USERNAME: admin
+#       OS_PASSWORD: "{{ DB_PASSWD }}"
+#       OS_AUTH_URL: http://controller:5000/v3
+#       OS_IDENTITY_API_VERSION: '3'
+#       OS_IMAGE_API_VERSION: '2'        
+#   
+#   - name: create image service api endpoint3
+#     command: openstack --os-auth-url http://controller:5000/v3 endpoint create --region RegionOne placement admin http://controller:8778
+#     environment:
+#       OS_PROJECT_DOMAIN_NAME: Default
+#       OS_USER_DOMAIN_NAME: Default
+#       OS_PROJECT_NAME: admin
+#       OS_USERNAME: admin
+#       OS_PASSWORD: "{{ DB_PASSWD }}"
+#       OS_AUTH_URL: http://controller:5000/v3
+#       OS_IDENTITY_API_VERSION: '3'
+#       OS_IMAGE_API_VERSION: '2'        
+
+#   - name: install openstack-placement-api
+#     yum:
+#       name: openstack-placement-api
+#       state: latest        
+
+#   - name: Copy placement configuration file
+#     copy:
+#       src: ~/ansible/test-ansible/conf/controller/placement.conf
+#       dest: /etc/placement/placement.conf
+
+#   - name: Reset placement database
+#     command: su -s /bin/sh -c "placement-manage db sync" placement
+   
+    - name: Copy httpd configuration file
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/00-placement-api.conf
+        dest: /etc/httpd/conf.d/00-placement-api.conf
+
+    - name: restart httpd
+      command: systemctl restart httpd
+ 
+ 
+
+

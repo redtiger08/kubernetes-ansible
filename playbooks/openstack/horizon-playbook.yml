@@ -1,0 +1,27 @@
+- name: Setting Controller
+  hosts:
+    - sv_kst01
+
+  tasks:
+
+    - name: install openstack-dashboard
+      yum:
+        name: openstack-dashboard
+        state: latest        
+
+    - name: Copy dashboard local_settings
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/local_settings
+        dest: /etc/openstack-dashboard/local_settings
+     
+    - name: Copy openstack-dashboard.conf
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/openstack-dashboard.conf
+        dest: /etc/httpd/conf.d/openstack-dashboard.conf
+ 
+    - name: Restart neutron httpd.service memcached.service
+      command: systemctl restart httpd.service memcached.service
+ 
+ 
+
+  

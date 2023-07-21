@@ -1,0 +1,26 @@
+all:
+  hosts:
+    node0[4:6]:
+      ansible_user: root
+      ansible_ssh_private_key_file: ~/mz_keys/bu_20.pem
+  children:
+    g_openstack:
+      children:
+        openstack_controller:
+          hosts:
+            node04:
+          vars:
+            ansible_user: root
+            ansible_ssh_private_key_file: ~/mz_keys/bu_20.pem
+        openstack_compute:
+          hosts:
+            node05:
+          vars:
+            ansible_user: root
+            ansible_ssh_private_key_file: ~/mz_keys/bu_20.pem
+        openstack_storage: 
+          hosts:
+            node04:
+          vars:
+            ansible_user: root
+            ansible_ssh_private_key_file: ~/mz_keys/bu_20.pem

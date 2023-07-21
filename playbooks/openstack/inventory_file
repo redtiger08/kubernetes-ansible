@@ -1,0 +1,4 @@
+[target_hosts]
+192.168.137.234 ansible_user=root ansible_ssh_private_key_file=~/mz_key/bu_20.pem
+192.168.137.235 ansible_user=root ansible_ssh_private_key_file=~/mz_key/bu_20.pem
+192.168.137.236 ansible_user=root ansible_ssh_private_key_file=~/mz_key/bu_20.pem

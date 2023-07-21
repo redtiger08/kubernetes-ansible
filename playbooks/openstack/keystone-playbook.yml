@@ -1,0 +1,150 @@
+- name: Setting Controller
+  hosts:
+    - sv_kst01 
+
+  tasks:
+    #    - name: create db
+    #      command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e 'CREATE DATABASE keystone;'"
+
+    #    - name: grant db1
+    #      command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY '{{ DB_PASSWD }}';\""
+
+    #    - name: grant db2
+    #      command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%'     IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+   
+#   - name: install python2-qpid-proton-0.26.0-2.el7.x86_64
+#     yum:
+#       name: python2-qpid-proton-0.26.0-2.el7.x86_64
+#       state: latest
+
+#   - name: install openstack-keystone
+#     yum:
+#       name: openstack-keystone
+#       state: latest
+
+#   - name: install httpd
+#     yum:
+#       name: httpd
+#       state: latest
+
+#   - name: install mod_wsgi
+#     yum:
+#       name: mod_wsgi
+#       state: latest
+
+#   - name: Copy keystone configuration file
+#     copy:
+#       src: ~/ansible/test-ansible/conf/controller/keystone.conf
+#       dest: /etc/keystone/keystone.conf
+
+  # - name: identity service db reset
+  #   command: su -s /bin/sh -c "keystone-manage db_sync" keystone
+
+#   - name: identity service db reset
+#     become: yes
+#     command : su -s /bin/sh -c "keystone-manage db_sync" keystone
+
+
+#   - name: Fernet key repo reset1
+#     command: keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
+#   - name: Fernet key repo reset2
+#     command: keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+
+#   - name: identity service bootstrap
+#     command: keystone-manage bootstrap --bootstrap-password qwe123 --bootstrap-admin-url http://controller:5000/v3/ --bootstrap-internal-url http://controller:5000/v3/ --bootstrap-public-url http://controller:5000/v3/ --bootstrap-region-id RegionOne
+
+    - name: Copy httpd configuration file
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/httpd.conf
+        dest: /etc/httpd/conf/httpd.conf
+
+    - name: link wsgi-keystone.conf
+      command: ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
+
+    - name: enble httpd
+      command: systemctl enable httpd.service
+
+    - name: restart httpd
+      command: systemctl start httpd.service
+
+    - name: Copy openrc file
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/admin-openrc
+        dest: ~/admin-openrc
+
+    - name: Create example domain
+      command: openstack --os-auth-url http://controller:5000/v3 domain create --description "An Example Domain" example
+      environment:
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_PROJECT_NAME: admin
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2' 
+
+    - name: make service project
+      command: openstack --os-auth-url http://controller:5000/v3 project create --domain default --description "Service Project" service
+      environment:
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_PROJECT_NAME: admin
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2' 
+  
+
+    - name: make demo project
+      command: openstack --os-auth-url http://controller:5000/v3 project create --domain default  --description "Demo Project" myproject
+      environment:
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_PROJECT_NAME: admin
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2' 
+
+
+
+    - name: Create myuser
+      expect:
+        command: openstack --os-auth-url http://controller:5000/v3 user create --domain default --password-prompt myuser
+        responses:
+          "User Password": "{{ DB_PASSWD }}"
+          "Repeat User Password": "{{ DB_PASSWD }}" 
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2'
+
+    - name: create role for myrole
+      command: openstack --os-auth-url http://controller:5000/v3 role create myrole
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_IDENTITY_API_VERSION: '3'        
+        OS_IMAGE_API_VERSION: '2' 
+ 
+    - name: add myrole in myproject and myuser
+      command: openstack --os-auth-url http://controller:5000/v3 role add --project myproject --user myuser myrole
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_IDENTITY_API_VERSION: '3'        
+        OS_IMAGE_API_VERSION: '2'  
+
+
+ 

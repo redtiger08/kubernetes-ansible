@@ -1,0 +1,156 @@
+- name: Setting Controller
+  hosts:
+    - sv_kst01
+
+  tasks:
+
+#   - name: create nova-api db
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e 'CREATE DATABASE nova_api;'"
+#     
+#   - name: create nova db
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e 'CREATE DATABASE nova;'"
+
+#   - name: create nova_cell0 db
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e 'CREATE DATABASE nova_cell0;'"
+
+#   - name: grant db1
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+
+#   - name: grant db2
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+#   
+#   - name: grant db3
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+
+#   - name: grant db4
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+#   
+#   - name: grant db5
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'localhost' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+
+#   - name: grant db6
+#     command: "mysql -u{{ DB_USER }} -p{{ DB_PASSWD }} -e \"GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%' IDENTIFIED BY '{{ DB_PASSWD  }}';\""
+
+#   - name: Create nova user
+#     expect:
+#       command: openstack --os-auth-url http://controller:5000/v3 user create --domain default --password-prompt nova
+#       responses:
+#         "User Password": "{{ DB_PASSWD }}"
+#         "Repeat User Password": "{{ DB_PASSWD }}"
+#     environment:
+#       OS_PROJECT_DOMAIN_NAME: Default
+#       OS_USER_DOMAIN_NAME: Default
+#       OS_PROJECT_NAME: admin
+#       OS_USERNAME: admin
+#       OS_PASSWORD: "{{ DB_PASSWD }}"
+#       OS_IDENTITY_API_VERSION: '3'
+#       OS_IMAGE_API_VERSION: '2' 
+
+    - name: Add admin role to nova user
+      command: openstack --os-auth-url http://controller:5000/v3 role add --project service --user nova admin
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_AUTH_URL: http://controller:5000/v3
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2'        
+   
+    - name: create nova service 
+      command: openstack --os-auth-url http://controller:5000/v3 service create --name nova --description "OpenStack Compute" compute
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_AUTH_URL: http://controller:5000/v3
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2'        
+ 
+
+    - name: create nova endpoint1
+      command: openstack --os-auth-url http://controller:5000/v3 endpoint create --region RegionOne compute public http://controller:8774/v2.1
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_AUTH_URL: http://controller:5000/v3
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2'        
+
+    - name: create nova api endpoint2
+      command: openstack --os-auth-url http://controller:5000/v3 endpoint create --region RegionOne compute internal http://controller:8774/v2.1
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_AUTH_URL: http://controller:5000/v3
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2'        
+    
+    - name: create nova api endpoint3
+      command: openstack --os-auth-url http://controller:5000/v3 endpoint create --region RegionOne compute admin http://controller:8774/v2.1
+      environment:
+        OS_PROJECT_DOMAIN_NAME: Default
+        OS_USER_DOMAIN_NAME: Default
+        OS_PROJECT_NAME: admin
+        OS_USERNAME: admin
+        OS_PASSWORD: "{{ DB_PASSWD }}"
+        OS_AUTH_URL: http://controller:5000/v3
+        OS_IDENTITY_API_VERSION: '3'
+        OS_IMAGE_API_VERSION: '2'        
+
+    - name: install openstack-nova-api
+      yum:
+        name: openstack-nova-api
+        state: latest        
+
+    - name: install openstack-nova-conductor
+      yum:
+        name: openstack-nova-conductor
+        state: latest        
+   
+    - name: openstack-nova-novncproxy
+      yum:
+        name: openstack-nova-novncproxy
+        state: latest        
+
+    - name: install openstack-nova-scheduler
+      yum:
+        name: openstack-nova-scheduler
+        state: latest        
+
+
+    - name: Copy nova controller configuration file
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/nova.conf
+        dest: /etc/nova/nova.conf
+
+    - name: Reset nova-api database
+      command: su -s /bin/sh -c "nova-manage api_db sync" nova
+  
+    - name: Add nova-cell0  database
+      command: su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova
+
+    - name: Make nova-cell1 database
+      command: su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
+  
+    - name: Reset nova database
+      command: su -s /bin/sh -c "nova-manage db sync" nova
+   
+    - name: enable nova
+      command: systemctl enable openstack-nova-api.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+ 
+    - name: start nova
+      command: systemctl start openstack-nova-api.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+ 
+ 
+
+

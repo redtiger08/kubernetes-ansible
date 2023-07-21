@@ -1,0 +1,40 @@
+---
+- name: Install kubernetes in etcd
+  hosts:
+    - node04
+  environment:
+    KKZONE: kr
+
+  tasks:
+    - name: make directory
+      command: mkdir -p ~/deploy/kubernetes
+
+    - name: change position
+      command: cd ~/deploy/kubernetes
+    
+    - name: Copy kubernetes config file 
+      copy:
+        src: ~/ansible/test-ansible/conf/etcd/config-sample.yaml
+        dest: ~/deploy/kubernetes/config-sample.yaml
+
+    - name: Copy kk 
+      copy:
+        src: ~/ansible/test-ansible/conf/etcd/kk
+        dest: ~/deploy/kubernetes/kk
+
+    - name: Copy kubekey
+      copy:
+        src: ~/ansible/test-ansible/conf/etcd/kubekey-v3.0.7-linux-amd64.tar.gz
+        dest: ~/deploy/kubernetes/kubekey-v3.0.7-linux-amd64.tar.gz
+
+
+
+    - name: changemod kk
+      shell: chmod +x ~/deploy/kubernetes/kk
+
+    - name: install kubernetes
+      command: ~/deploy/kubernetes/kk create cluster --with-kubernetes v1.23.10 --with-kubesphere v3.3.0 -f ~/deploy/kubernetes/config-sample.yaml -y
+
+
+
+

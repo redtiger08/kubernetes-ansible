@@ -1,0 +1,64 @@
+- name: Setting Controller
+  hosts:
+    - sv_kst01 
+
+  tasks:
+    - name: install rabbitmq-server
+      yum:
+        name: rabbitmq-server
+        state: latest
+
+    - name: enble rabbitmq-server
+      command: systemctl enable rabbitmq-server.service
+
+    - name: restart rabbitmq-server
+      command: systemctl start rabbitmq-server.service
+
+
+    - name: add rabbitmq-user
+      command: rabbitmqctl add_user openstack qwe123
+    
+    - name: add permission rabbitmq-user
+      command: rabbitmqctl set_permissions openstack ".*" ".*" ".*"
+
+    - name: install memcached
+      yum:
+        name: memcached
+        state: latest
+
+    - name: install python-memcached
+      yum:
+        name: python-memcached
+        state: latest
+
+    - name: Copy memcached configuration file
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/memcached
+        dest: /etc/sysconfig/memcached
+
+    - name: enble memcached.service
+      command: systemctl enable memcached.service
+
+    - name: restart memcached.service
+      command: systemctl restart memcached.service
+
+    - name: install etcd
+      yum:
+        name: etcd
+        state: latest
+
+    - name: Copy etcd configuration file
+      copy:
+        src: ~/ansible/test-ansible/conf/controller/etcd.conf
+        dest: /etc/etcd/etcd.conf
+
+    - name: enble etcd
+      command: systemctl enable etcd
+
+    - name: restart etcd
+      command: systemctl restart etcd 
+
+
+
+
+   

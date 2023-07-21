@@ -1,0 +1,30 @@
+- name: Setting Compute
+  hosts:
+    - sv_kst02
+
+  tasks:
+
+    - name: install python2-qpid-proton-0.26.0-2.el7.x86_64
+      yum:
+        name: python2-qpid-proton-0.26.0-2.el7.x86_64
+        state: latest
+
+    - name: install openstack-nova-compute
+      yum:
+        name: openstack-nova-compute
+        state: latest        
+
+    - name: Copy nova controller configuration file
+      copy:
+        src: ~/ansible/test-ansible/conf/compute/nova.conf
+        dest: /etc/nova/nova.conf
+    
+    - name: enable nova
+      command: systemctl enable libvirtd.service openstack-nova-compute.service
+ 
+    - name: start nova
+      command: systemctl start libvirtd.service openstack-nova-compute.service
+ 
+ 
+
+

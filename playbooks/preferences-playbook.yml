@@ -1,0 +1,83 @@
+- name: Install OpenStack packages
+  hosts: 
+    - node04
+    - node05
+    - node06
+
+  tasks:
+    - name: Install vim
+      yum:
+        name: vim
+        state: latest
+
+    - name: Install net-tools
+      yum:
+        name: net-tools
+        state: latest
+
+    - name: Install wget
+      yum:
+        name: wget
+        state: latest 
+    
+    - name: Install git
+      yum:
+        name: git
+        state: latest
+
+    - name: Install epel-release
+      yum:
+        name: epel-release
+        state: latest
+
+    - name: Install yum-utils
+      yum:
+        name: yum-utils
+        state: latest 
+ 
+    - name: Install dnf
+      yum:
+        name: dnf
+        state: latest 
+ 
+
+
+    - name: Upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+
+
+    - name: stop firewalld 
+      command: systemctl stop firewalld
+   
+    - name: disable firewalld
+      command: systemctl disable firewalld
+
+    - name: selinux off
+      command: setenforce 0
+ 
+
+    - name: Install socat
+      yum:
+        name: socat
+        state: latest
+
+    - name: Install conntrack
+      yum:
+        name: conntrack
+        state: latest
+
+    - name: Install ebtables
+      yum:
+        name: ebtables
+        state: latest 
+ 
+    - name: Install ipset
+      yum:
+        name: ipset
+        state: latest 
+ 
+
+        
+
